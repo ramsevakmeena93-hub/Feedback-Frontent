@@ -230,11 +230,12 @@ export default function Landing() {
         setPendingAuth(data);
         setModal(null);
         setShowSig(true);
+        toast.success(`Welcome! Please set up your signature.`);
       } else {
         login(data.user, data.token);
         navigate(data.user.role === "vc" ? "/vc" : data.user.role === "faculty" ? "/faculty" : data.user.role === "admin" ? "/admin" : "/hod");
+        toast.success(`Logged in as ${p.label}!`);
       }
-      toast.success(`Logged in as ${p.label}!`);
     } catch(err) {
       toast.error(err.response?.data?.error || "Demo login failed");
     } finally {
