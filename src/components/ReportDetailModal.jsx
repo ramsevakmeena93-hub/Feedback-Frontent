@@ -123,16 +123,6 @@ export default function ReportDetailModal({ report, onClose, onApprove, onSendTo
               ) : (
                 <p className="text-xs text-slate-400 italic">No PDF link</p>
               )}
-              <div className="mt-3 space-y-1">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Appreciation</span>
-                  <span className="text-emerald-600 font-semibold">{report.appreciationCount || 0} comments</span>
-                </div>
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Needs Attention</span>
-                  <span className="text-amber-600 font-semibold">{report.attentionCount || 0} comments</span>
-                </div>
-              </div>
             </div>
 
             {/* Card 4: FFI Score */}

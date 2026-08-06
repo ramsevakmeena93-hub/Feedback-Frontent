@@ -56,8 +56,14 @@ export function AuthProvider({ children, appRole }) {
     localStorage.removeItem(storageKey);
   }
 
+  function updateUser(newUserData) {
+    const storageKey = 'auth';
+    setUser(newUserData);
+    localStorage.setItem(storageKey, JSON.stringify({ user: newUserData, token }));
+  }
+
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, loading, appRole }}>
+    <AuthContext.Provider value={{ user, token, login, logout, updateUser, loading, appRole }}>
       {children}
     </AuthContext.Provider>
   );
