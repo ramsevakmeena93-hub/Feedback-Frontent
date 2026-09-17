@@ -304,7 +304,8 @@ export default function FeedbackManagement({ token, isDark }) {
     if (!submissionId) return toast.error('No submission linked to this report');
     toast.loading('Generating PDF…', { id: 'pdf-dl' });
     try {
-      const res = await fetch(`/api/submissions/${submissionId}/pdf`, {
+      const baseURL = api.defaults.baseURL || '';
+      const res = await fetch(`${baseURL}/api/submissions/${submissionId}/pdf`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Failed');

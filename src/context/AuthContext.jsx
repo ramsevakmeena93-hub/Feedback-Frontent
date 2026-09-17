@@ -106,7 +106,7 @@ export function AuthProvider({ children, appRole }) {
   async function refreshRolesFromServer(authToken) {
     if (!authToken) return;
     try {
-      const res = await fetch('/api/auth/me', {
+      const res = await fetch(`${SOCKET_URL}/api/auth/me`, {
         headers: { Authorization: `Bearer ${authToken}` },
       });
       if (!res.ok) return;

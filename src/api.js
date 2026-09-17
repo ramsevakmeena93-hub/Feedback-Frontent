@@ -5,6 +5,12 @@ const isProd = import.meta.env.PROD;
 const baseURL = import.meta.env.VITE_API_URL
   || (isProd ? 'https://feedbackbackend-production-db19.up.railway.app' : '');
 
+// ── Set global default so ALL axios calls (even raw `import axios from 'axios'`)
+// use the correct backend URL in production. Without this, components like
+// Login, Register, FacultyDashboard, HODDashboard, etc. would call relative
+// paths that hit the frontend domain instead of the backend. ──────────────────
+axios.defaults.baseURL = baseURL;
+
 const api = axios.create({ baseURL });
 
 // ── Request interceptor — attach JWT from localStorage automatically ─────────
