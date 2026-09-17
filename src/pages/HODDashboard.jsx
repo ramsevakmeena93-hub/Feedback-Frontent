@@ -8,7 +8,8 @@ import StatsBar from "../components/StatsBar";
 import PDFUploadModal from "../components/PDFUploadModal";
 import CSVReviewModal from "../components/CSVReviewModal";
 import Footer from "../components/Footer";
-import { Upload, Send, Trash2, RefreshCw, Wrench, Users, Plus, Download, FileText, X, ChevronRight, PenLine, Clock, CheckCircle } from "lucide-react";
+import WorkspaceSwitcher from "../components/WorkspaceSwitcher";
+import { Upload, Send, Trash2, RefreshCw, Wrench, Users, Plus, Download, FileText, X, ChevronRight, PenLine, Clock, CheckCircle, AlertTriangle, ShieldAlert } from "lucide-react";
 
 // Dynamic academic year list from 2020 to 10 years ahead
 const CURRENT_YEAR = new Date().getFullYear();
@@ -18,7 +19,7 @@ const YEARS = Array.from({ length: 11 }, (_, i) => {
 });
 
 export default function HODDashboard() {
-  const { token, user, logout, updateUser } = useAuth();
+  const { token, user, logout, updateUser, isMultiRole, activeWorkspace } = useAuth();
   const csvRef = useRef();
   const sigRef = useRef();
 
@@ -336,7 +337,39 @@ export default function HODDashboard() {
   }
 
   const processed = reports.filter(r => r.status === "processed");
-  const approvedSubs = submissions.filter(s => s.status === "approved" || s.status === "rejected");
+  const approvedSubs = submissions.filter(s => s.status === "approved" || s.status === "rejected" || s.status === "sent_back");
+
+  // ── VC decision popup ─────────────────────────────────────────────────────
+  // Show once per session for each unacknowledged VC decision.
+  // Dismissed IDs are persisted to localStorage so reloads don't re-show.
+  const [vcPopupQueue, setVcPopupQueue] = useState([]);
+  const [vcPopupIdx,   setVcPopupIdx]   = useState(0);
+  const [showVcPopup,  setShowVcPopup]  = useState(false);
+
+  useEffect(() => {
+    const dismissed = JSON.parse(localStorage.getItem('dismissedVcDecisions') || '[]');
+    const pending = approvedSubs.filter(s => !dismissed.includes(s._id));
+    if (pending.length > 0) {
+      setVcPopupQueue(pending);
+      setVcPopupIdx(0);
+      setShowVcPopup(true);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [submissions.length]);
+
+  function dismissVcPopup() {
+    const current = vcPopupQueue[vcPopupIdx];
+    if (current) {
+      const dismissed = JSON.parse(localStorage.getItem('dismissedVcDecisions') || '[]');
+      dismissed.push(current._id);
+      localStorage.setItem('dismissedVcDecisions', JSON.stringify(dismissed));
+    }
+    if (vcPopupIdx + 1 < vcPopupQueue.length) {
+      setVcPopupIdx(i => i + 1);
+    } else {
+      setShowVcPopup(false);
+    }
+  }
 
   const visibleReports = reports.filter(r => {
     if (sessionStartTime) return new Date(r.createdAt).getTime() >= sessionStartTime;
@@ -352,100 +385,124 @@ export default function HODDashboard() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 flex flex-col text-slate-800 dark:text-slate-100 transition-colors duration-200">
-      <Navbar title="HOD Dashboard" subtitle={user?.department} />
+      <Navbar title="Faculty Feedback Reports" subtitle={currentSession ? `${currentSession.department} · ${currentSession.academicYear}` : `${user?.department || "Department"}`} />
 
       <main className="flex-1 max-w-screen-2xl mx-auto w-full px-4 sm:px-6 py-6 space-y-5">
 
         {/* Page header */}
         <div className="flex items-start justify-between gap-4 animate-fade-in mb-8">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-purple-600 dark:from-indigo-400 dark:to-purple-400">Faculty Feedback Reports</h1>
+            <h1 className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-purple-600 dark:from-indigo-400 dark:to-purple-400">HOD Dashboard</h1>
             <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
               {currentSession
                 ? `${currentSession.department} · ${currentSession.academicYear}`
                 : `Academic Year ${YEARS[Math.max(0, CURRENT_YEAR - 2020)]} · ${user?.department || "Department"}`}
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2">
-            {/* Signature upload button */}
-            <button
-              onClick={() => { setSigPreview(user?.signatureImage || null); setShowSigModal(true); }}
-              className="btn btn-secondary btn-sm text-indigo-600 flex items-center gap-1.5"
-              title="Upload / Edit Signature"
-            >
-              <PenLine size={14} /> Signature
-            </button>
-            <div className="w-9 h-9 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center text-indigo-700 dark:text-indigo-300 font-bold text-sm">
-              {user?.name?.[0]?.toUpperCase()}
-            </div>
-          </div>
+
         </div>
 
-        {/* VC Notifications */}
-        {approvedSubs.map(sub => (
-          <div key={sub._id} className={`rounded-2xl px-5 py-3.5 flex items-center gap-3 text-sm font-medium border animate-slide-up ${sub.status === "approved" ? "bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/80 text-emerald-800 dark:text-emerald-300" : "bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800/80 text-red-800 dark:text-red-300"}`}>
-            <span>{sub.status === "approved" ? "✅" : "❌"}</span>
-            <span className="flex-1">
-              {sub.status === "approved" ? (
-                <>
-                  VC has <strong>approved</strong> your submission ({sub.academicYear || new Date().getFullYear()}) — download PDF from the History section
-                </>
-              ) : (
-                <>
-                  VC has <strong>rejected</strong> your submission ({sub.academicYear || new Date().getFullYear()})
-                </>
-              )}
-            </span>
-            {sub.vcComment && <span className="text-xs opacity-60 ml-1">— "{sub.vcComment}"</span>}
-          </div>
-        ))}
+        {/* VC Decision Popup Modal */}
+        {showVcPopup && vcPopupQueue[vcPopupIdx] && (() => {
+          const sub = vcPopupQueue[vcPopupIdx];
+          const isApproved  = sub.status === "approved";
+          const isRejected  = sub.status === "rejected";
+          const isSentBack  = sub.status === "sent_back";
+          const remaining   = vcPopupQueue.length - vcPopupIdx - 1;
+          return (
+            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-fade-in">
+              <div className={`bg-white dark:bg-slate-900 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-scale-in border-2 ${
+                isApproved ? "border-emerald-400" : isRejected ? "border-red-400" : "border-amber-400"
+              }`}>
+                {/* Header strip */}
+                <div className={`px-6 py-5 ${
+                  isApproved  ? "bg-gradient-to-r from-emerald-500 to-green-500"
+                  : isRejected ? "bg-gradient-to-r from-red-500 to-rose-500"
+                  : "bg-gradient-to-r from-amber-500 to-orange-500"
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <span className="text-4xl">
+                      {isApproved ? "✅" : isRejected ? "❌" : "↩️"}
+                    </span>
+                    <div>
+                      <p className="text-white font-black text-xl leading-tight">
+                        {isApproved  ? "Submission Approved!" 
+                        : isRejected ? "Submission Rejected"
+                        : "Submission Sent Back"}
+                      </p>
+                      <p className="text-white/80 text-sm mt-0.5">
+                        VC Decision — {sub.academicYear || new Date().getFullYear()}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Body */}
+                <div className="px-6 py-5 space-y-4">
+                  <p className="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
+                    {isApproved && <>
+                      The Vice Chancellor has <strong className="text-emerald-600">approved</strong> your feedback
+                      submission for the <strong>{sub.department || "your department"}</strong> department,
+                      Academic Year <strong>{sub.academicYear || "2026"}</strong>
+                      {sub.session ? `, ${sub.session === "jan-may" ? "Jan – May" : "Jul – Dec"} session` : ""}.
+                      The final PDF report is now available.
+                    </>}
+                    {isRejected && <>
+                      The Vice Chancellor has <strong className="text-red-600">rejected</strong> your feedback
+                      submission for <strong>{sub.department || "your department"}</strong>,
+                      Academic Year <strong>{sub.academicYear || "2026"}</strong>.
+                      Please review the comments and resubmit.
+                    </>}
+                    {isSentBack && <>
+                      The Vice Chancellor has <strong className="text-amber-600">sent back</strong> your
+                      submission for <strong>{sub.department || "your department"}</strong> for revision.
+                    </>}
+                  </p>
+
+                  {sub.vcComment && (
+                    <div className={`rounded-2xl p-4 border ${
+                      isApproved  ? "bg-emerald-50 border-emerald-200 dark:bg-emerald-950/30 dark:border-emerald-800"
+                      : isRejected ? "bg-red-50 border-red-200 dark:bg-red-950/30 dark:border-red-800"
+                      : "bg-amber-50 border-amber-200 dark:bg-amber-950/30 dark:border-amber-800"
+                    }`}>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-1">VC Comment</p>
+                      <p className="text-sm text-slate-800 dark:text-slate-200 italic">"{sub.vcComment}"</p>
+                    </div>
+                  )}
+
+                  {remaining > 0 && (
+                    <p className="text-xs text-slate-400 text-center">
+                      {remaining} more decision{remaining > 1 ? "s" : ""} waiting
+                    </p>
+                  )}
+                </div>
+
+                {/* Actions */}
+                <div className="px-6 py-4 border-t border-slate-100 dark:border-slate-800 flex gap-3">
+                  {isApproved && (
+                    <a
+                      href="/hod/history"
+                      onClick={dismissVcPopup}
+                      className="btn btn-success flex-1 text-center justify-center"
+                    >
+                      📄 View & Download PDF
+                    </a>
+                  )}
+                  <button
+                    onClick={dismissVcPopup}
+                    className={`btn flex-1 justify-center ${isApproved ? "btn-secondary" : "btn-primary"}`}
+                  >
+                    {remaining > 0 ? "Next →" : "Dismiss"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* ── REPORTS ── */}
         <>
 
-
-          <div className="card px-5 py-3.5 flex flex-wrap gap-2 items-center justify-between animate-fade-in">
-            <div className="flex flex-wrap gap-2">
-              <button onClick={() => setShowPDFModal(true)} className="btn btn-primary btn-sm">
-                <Plus size={14} /> Upload PDFs
-              </button>
-              <input ref={csvRef} type="file" accept=".csv" className="hidden" onChange={handleCSVFileSelect} />
-              <button onClick={() => csvRef.current.click()} className="btn btn-secondary btn-sm">
-                <Upload size={14} /> Upload CSV
-              </button>
-              {reports.length > 0 && <>
-                <button onClick={fixMetadata} className="btn btn-secondary btn-sm text-indigo-600">
-                  <Wrench size={14} /> Fix Names
-                </button>
-                <button onClick={clearAllReports} className="btn btn-secondary btn-sm text-red-600">
-                  <Trash2 size={14} /> Clear All
-                </button>
-              </>}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <button onClick={fetchReports} className="btn btn-ghost btn-sm">
-                <RefreshCw size={14} /> Refresh
-              </button>
-              {processed.length > 0 && (
-                <button onClick={handleBulkSendToFaculty} className="btn btn-secondary btn-sm text-teal-700">
-                  <Users size={14} /> Send All to Faculty
-                </button>
-              )}
-              {reports.length > 0 && (
-                <>
-                  <button onClick={handleExportCSV} className="btn btn-secondary btn-sm text-emerald-700">
-                    <Download size={14} /> Export CSV
-                  </button>
-                  <button onClick={handleExportPDF} disabled={exportingPDF} className="btn btn-secondary btn-sm text-violet-700">
-                    <FileText size={14} /> {exportingPDF ? "Generating..." : "Export PDF"}
-                  </button>
-                </>
-              )}
-              <button onClick={handleSendToVC} disabled={selected.length === 0} className="btn btn-success btn-sm">
-                <Send size={14} /> Send to VC {selected.length > 0 && `(${selected.length})`}
-              </button>
-            </div>
-          </div>
 
           {loading ? (
             <div className="card p-12 text-center animate-fade-in">
@@ -456,6 +513,51 @@ export default function HODDashboard() {
           ) : (
             <div className="animate-slide-up">
               <StatsBar stats={hodStats} />
+
+              {/* ── Toolbar ── */}
+              <div className="card px-5 py-3.5 flex flex-wrap gap-2 items-center justify-between animate-fade-in mt-4">
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={() => setShowPDFModal(true)} className="btn btn-primary btn-sm">
+                    <Plus size={14} /> Upload PDFs
+                  </button>
+                  <input ref={csvRef} type="file" accept=".csv" className="hidden" onChange={handleCSVFileSelect} />
+                  <button onClick={() => csvRef.current.click()} className="btn btn-secondary btn-sm">
+                    <Upload size={14} /> Upload CSV
+                  </button>
+                  {reports.length > 0 && <>
+                    <button onClick={fixMetadata} className="btn btn-secondary btn-sm text-indigo-600">
+                      <Wrench size={14} /> Fix Names
+                    </button>
+                    <button onClick={clearAllReports} className="btn btn-secondary btn-sm text-red-600">
+                      <Trash2 size={14} /> Clear All
+                    </button>
+                  </>}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <button onClick={fetchReports} className="btn btn-ghost btn-sm">
+                    <RefreshCw size={14} /> Refresh
+                  </button>
+                  {processed.length > 0 && (
+                    <button onClick={handleBulkSendToFaculty} className="btn btn-secondary btn-sm text-teal-700">
+                      <Users size={14} /> Send All to Faculty
+                    </button>
+                  )}
+                  {reports.length > 0 && (
+                    <>
+                      <button onClick={handleExportCSV} className="btn btn-secondary btn-sm text-emerald-700">
+                        <Download size={14} /> Export CSV
+                      </button>
+                      <button onClick={handleExportPDF} disabled={exportingPDF} className="btn btn-secondary btn-sm text-violet-700">
+                        <FileText size={14} /> {exportingPDF ? "Generating..." : "Export PDF"}
+                      </button>
+                    </>
+                  )}
+                  <button onClick={handleSendToVC} disabled={selected.length === 0} className="btn btn-success btn-sm">
+                    <Send size={14} /> Send to VC {selected.length > 0 && `(${selected.length})`}
+                  </button>
+                </div>
+              </div>
+
               <FeedbackTable
                 reports={visibleReports}
                 selected={selected} onSelect={setSelected}

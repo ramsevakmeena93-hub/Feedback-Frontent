@@ -6,7 +6,7 @@ import {
   LayoutDashboard, BarChart3, Users, GraduationCap, UserCog, 
   Crown, Building2, Shield, MessageSquare, FileText, PenTool, 
   Bell, ClipboardList, Settings, Menu, Search, Moon, Sun, 
-  ChevronDown, ChevronRight, LogOut 
+  ChevronDown, ChevronRight, LogOut, Activity
 } from 'lucide-react';
 
 import DashboardOverview from './sections/DashboardOverview';
@@ -24,6 +24,7 @@ import DigitalSignatures from './sections/DigitalSignatures';
 import NotificationsSection from './sections/NotificationsSection';
 import AuditLogs from './sections/AuditLogs';
 import SettingsSection from './sections/SettingsSection';
+import LiveAnalytics from './sections/LiveAnalytics';
 
 export default function AdminLayout() {
   const { user, token, logout } = useAuth();
@@ -35,7 +36,7 @@ export default function AdminLayout() {
   });
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [hodMenuOpen, setHodMenuOpen] = useState(false);
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [notificationCount, setNotificationCount] = useState(0);
 
   useEffect(() => {
     localStorage.setItem('admin_dark_mode', isDark);
@@ -54,7 +55,7 @@ export default function AdminLayout() {
 
   const menuItems = [
     { id: 'dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { id: 'analytics', icon: BarChart3, label: 'Analytics' },
+    { id: 'live_analytics', icon: Activity, label: 'Live Analytics' },
     { id: 'users', icon: Users, label: 'User Management' },
     { id: 'google_users', icon: LogOut, label: 'Google OAuth Users' },
     { id: 'faculty', icon: GraduationCap, label: 'Faculty Management' },
@@ -81,20 +82,21 @@ export default function AdminLayout() {
     switch (activeSection) {
       case 'dashboard': return <DashboardOverview {...props} />;
       case 'analytics': return <Analytics {...props} />;
+      case 'live_analytics': return <LiveAnalytics token={token} isDark={isDark} />;
       case 'users': return <UserManagement {...props} />;
       case 'google_users': return <GoogleAuthUsers {...props} />;
       case 'faculty': return <FacultyManagement {...props} />;
       case 'hod': 
       case 'hod_all':
       case 'hod_assign':
-        return <HODManagement {...props} subSection={activeSection} />;
+        return <HODManagement {...props} />;
       case 'vc': return <VCManagement {...props} />;
       case 'departments': return <DepartmentManagement {...props} />;
       case 'roles': return <RolePermissions {...props} />;
       case 'feedback': return <FeedbackManagement {...props} />;
       case 'reports': return <Reports {...props} />;
       case 'signatures': return <DigitalSignatures {...props} />;
-      case 'notifications': return <NotificationsSection {...props} />;
+      case 'notifications': return <NotificationsSection {...props} onCountChange={setNotificationCount} />;
       case 'audit': return <AuditLogs {...props} />;
       case 'settings': return <SettingsSection {...props} />;
       default: return <DashboardOverview {...props} />;
@@ -102,17 +104,10 @@ export default function AdminLayout() {
   };
 
   const SidebarItem = ({ id, icon: Icon, label, badge, isSubItem = false }) => {
-    const isActive = activeSection === id || (id === 'hod' && activeSection.startsWith('hod_'));
+    const isActive = activeSection === id;
     return (
       <button
-        onClick={() => {
-          if (id === 'hod') {
-            if (sidebarCollapsed) setSidebarCollapsed(false);
-            setHodMenuOpen(!hodMenuOpen);
-          } else {
-            setActiveSection(id);
-          }
-        }}
+        onClick={() => setActiveSection(id)}
         className={`w-full flex items-center justify-between px-3.5 py-2.5 my-0.5 rounded-xl transition-all duration-200 group text-xs font-semibold
           ${isActive 
             ? 'bg-indigo-600 text-white shadow-md' 
@@ -131,9 +126,6 @@ export default function AdminLayout() {
               <span className="px-1.5 py-0.5 text-[10px] font-bold rounded-full bg-rose-500 text-white">
                 {badge}
               </span>
-            )}
-            {id === 'hod' && (
-              hodMenuOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />
             )}
           </div>
         )}
@@ -174,13 +166,6 @@ export default function AdminLayout() {
           
           {/* HOD Menu */}
           <SidebarItem id="hod" icon={UserCog} label="HOD Management" />
-          {!sidebarCollapsed && hodMenuOpen && (
-            <div className="space-y-0.5">
-              {hodSubItems.map(subItem => (
-                <SidebarItem key={subItem.id} {...subItem} isSubItem={true} />
-              ))}
-            </div>
-          )}
 
           {menuItems2.map(item => (
             <SidebarItem key={item.id} {...item} />

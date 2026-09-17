@@ -9,6 +9,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import mitsLogo from "../assets/mits-logo.png";
+import WorkspaceSwitcher from "./WorkspaceSwitcher";
 
 const ROLE_CFG = {
   hod:     { label: "HOD",     color: "from-blue-600 to-blue-700",    badge: "bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300",     home: "/hod"     },
@@ -81,7 +82,7 @@ export default function Navbar({ title, subtitle }) {
         .catch(() => {});
     }
     fetchNotifs();
-    const iv = setInterval(fetchNotifs, 20000);
+    const iv = setInterval(fetchNotifs, 60000);
     return () => clearInterval(iv);
   }, [token, api]);
 
@@ -112,8 +113,9 @@ export default function Navbar({ title, subtitle }) {
       } catch {}
     }
     setNotifOpen(false);
-    if (user?.role === "faculty") navigate(n.type === "vc_approved" ? "/faculty/history" : "/faculty");
-    else if (user?.role === "hod") navigate(["vc_approved", "vc_rejected"].includes(n.type) ? "/hod/history" : "/hod");
+    const ws = user?.activeWorkspace || user?.role;
+    if (ws === "faculty") navigate(n.type === "vc_approved" ? "/faculty/history" : "/faculty");
+    else if (ws === "hod") navigate(["vc_approved", "vc_rejected"].includes(n.type) ? "/hod/history" : "/hod");
   }
 
   // Signature handlers (for HOD/Faculty in navbar)
@@ -142,7 +144,7 @@ export default function Navbar({ title, subtitle }) {
     toast.success("Logged out successfully");
   }
 
-  const role = user?.role || "hod";
+  const role = user?.activeWorkspace || user?.role || "hod";
   const cfg = ROLE_CFG[role] || ROLE_CFG.hod;
   const navLinks = NAV_LINKS[role] || [];
   const initials = user?.name ? user.name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase() : "U";
@@ -197,6 +199,9 @@ export default function Navbar({ title, subtitle }) {
 
           {/* Right — Actions */}
           <div className="flex items-center gap-1.5">
+
+            {/* Workspace Switcher — only shows for multi-role users */}
+            <WorkspaceSwitcher />
 
             {/* Theme toggle */}
             <button

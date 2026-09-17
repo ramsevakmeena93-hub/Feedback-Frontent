@@ -157,17 +157,11 @@ export default function DigitalSignatures() {
             {/* Action buttons */}
             <div className="flex items-center gap-2 pt-1">
               <button 
-                onClick={() => handleStatusChange(s._id, 'verified')}
-                className="flex-1 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center justify-center gap-1 transition-all"
-              >
-                <CheckCircle size={13} /> Approve
-              </button>
-              <button 
                 onClick={() => handleDeleteSignature(s._id)}
-                className="p-1.5 bg-rose-50 dark:bg-rose-950 text-rose-600 rounded-lg text-xs font-semibold hover:bg-rose-100 transition-all"
+                className="flex-1 py-1.5 bg-rose-50 dark:bg-rose-950 text-rose-600 rounded-lg text-xs font-semibold flex items-center justify-center gap-1 hover:bg-rose-100 transition-all"
                 title="Delete Signature"
               >
-                <Trash2 size={15} />
+                <Trash2 size={13} /> Delete
               </button>
             </div>
           </div>
@@ -247,9 +241,6 @@ export default function DigitalSignatures() {
             <div className="flex justify-end gap-3 pt-2">
               <button onClick={() => handleDeleteSignature(previewUser._id)} className="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-semibold">
                 Delete Signature
-              </button>
-              <button onClick={() => handleStatusChange(previewUser._id, 'verified')} className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-xs font-semibold">
-                Approve Signature
               </button>
             </div>
           </div>

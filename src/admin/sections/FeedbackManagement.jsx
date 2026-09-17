@@ -484,9 +484,6 @@ export default function FeedbackManagement({ token, isDark }) {
                             <button onClick={() => setSelectedReport(r)} title="View / Edit" className="p-1.5 rounded-lg hover:bg-indigo-50 dark:hover:bg-indigo-950/30 text-indigo-600 dark:text-indigo-400 transition-colors">
                               <Eye size={14} />
                             </button>
-                            <button onClick={() => handleDeleteReport(r._id)} title="Delete" className="p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-500 transition-colors">
-                              <Trash2 size={14} />
-                            </button>
                           </div>
                         </td>
                       </tr>
