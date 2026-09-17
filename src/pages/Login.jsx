@@ -6,7 +6,7 @@ import { useAuth } from "../context/AuthContext";
 import { GraduationCap, CheckCircle, ArrowLeft, Shield, Users } from "lucide-react";
 import mitsLogo from "../assets/mits-logo.png";
 
-const GOOGLE_CLIENT_ID = "1084044671986-10c6e17vbbl87d4fjdj2tqnbps9t55g7.apps.googleusercontent.com";
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 
 export default function Login() {
   const navigate    = useNavigate();
@@ -27,6 +27,7 @@ export default function Login() {
         client_id: GOOGLE_CLIENT_ID,
         callback:  onCredential,
         auto_select: false,
+        hosted_domain: 'mitsgwalior.in',  // Restrict to institutional accounts (Google OAuth 2.0 policy)
       });
       window.google.accounts.id.renderButton(btnRef.current, {
         theme: "filled_blue",
