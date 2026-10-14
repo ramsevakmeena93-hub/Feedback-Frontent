@@ -283,21 +283,48 @@ export default function Landing() {
       <section className="py-24 relative overflow-hidden bg-[#0d1326] border-t border-slate-800">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-indigo-900/10 pointer-events-none" />
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-indigo-500/5 rounded-full blur-[120px] pointer-events-none" />
-        
+
         <div className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-semibold mb-6 shadow-sm">
             <Code2 size={14} className="text-indigo-400" />
             Behind the Code
           </div>
-          
+
           <h2 className="text-4xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">
             Meet the <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-purple-400 to-pink-400">Developer</span>
           </h2>
-          
-          <p className="text-slate-400 text-lg sm:text-xl mb-10 max-w-3xl mx-auto leading-relaxed">
-            Discover the architect behind the MITS Faculty Feedback System. Explore the journey, technical expertise, and the expert guidance that shaped this premium academic platform.
+
+          {/* Developer photo card */}
+          <div className="flex justify-center mb-8">
+            <div className="relative group cursor-pointer" onClick={() => navigate("/developer")}>
+              {/* Glow ring */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 blur-xl opacity-40 group-hover:opacity-70 transition-opacity duration-500 scale-110" />
+              {/* Photo */}
+              <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.5)] group-hover:border-indigo-400 group-hover:scale-105 transition-all duration-500">
+                <img
+                  src="/ajay-meena.png"
+                  alt="Ajay Meena"
+                  className="w-full h-full object-cover"
+                  style={{ objectPosition: '50% 20%' }}
+                  onError={e => {
+                    e.target.style.display = 'none';
+                    e.target.parentElement.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-5xl font-black">A</div>';
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              </div>
+              {/* Name badge below photo */}
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg whitespace-nowrap border border-white/20">
+                Ajay Meena
+              </div>
+            </div>
+          </div>
+
+          <p className="text-slate-400 text-base sm:text-lg mb-2 font-semibold text-indigo-300">Full Stack Developer & AI Innovator</p>
+          <p className="text-slate-500 text-sm mb-10 max-w-2xl mx-auto leading-relaxed">
+            Discover the architect behind the MITS Faculty Feedback System — exploring the journey, technical expertise, and expert guidance that shaped this platform.
           </p>
-          
+
           <button
             onClick={() => navigate("/developer")}
             className="inline-flex items-center gap-3 px-8 py-4 bg-white text-slate-900 hover:bg-indigo-50 font-bold rounded-xl shadow-xl hover:shadow-indigo-500/20 transition-all duration-300 hover:-translate-y-1 text-base group">
