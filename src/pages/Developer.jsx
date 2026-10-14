@@ -2,6 +2,7 @@ import { Mail, Linkedin, Github, GraduationCap, Briefcase, Award, Code2, Sparkle
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useAuth } from '../context/AuthContext';
+import ajayPhoto from '../assets/ajay-meena.png';
 
 const Developer = () => {
   const { user } = useAuth();
@@ -64,10 +65,9 @@ const Developer = () => {
                 {/* Profile Image */}
                 <div className="relative mb-6">
                   <div className="w-32 h-32 mx-auto rounded-full overflow-hidden border-[4px] border-indigo-500/30 shadow-[0_0_20px_rgba(79,70,229,0.4)] group-hover:border-indigo-400/60 transition-all duration-700 group-hover:scale-105 group-hover:rotate-3 relative z-10">
-                    <img src="/ajay-meena.png" alt="Ajay Meena"
+                    <img src={ajayPhoto} alt="Ajay Meena"
                       className="w-full h-full object-cover"
                       style={{ objectPosition: '50% 20%' }}
-                      onError={e => { e.target.style.display='none'; e.target.parentElement.innerHTML='<div class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-4xl font-black">A</div>'; }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   </div>

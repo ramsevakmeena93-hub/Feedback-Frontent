@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import mitsLogo from "../assets/mits-logo.png";
 import campusImg from "../assets/mits-campus2.png";
+import ajayPhoto from "../assets/ajay-meena.png";
 import {
   Building2, Users, GraduationCap, Shield,
   MapPin, Phone, Mail, ArrowRight,
@@ -302,14 +303,10 @@ export default function Landing() {
               {/* Photo */}
               <div className="relative w-36 h-36 rounded-full overflow-hidden border-4 border-indigo-500/50 shadow-[0_0_30px_rgba(99,102,241,0.5)] group-hover:border-indigo-400 group-hover:scale-105 transition-all duration-500">
                 <img
-                  src="/ajay-meena.png"
+                  src={ajayPhoto}
                   alt="Ajay Meena"
                   className="w-full h-full object-cover"
                   style={{ objectPosition: '50% 20%' }}
-                  onError={e => {
-                    e.target.style.display = 'none';
-                    e.target.parentElement.innerHTML = '<div class="w-full h-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white text-5xl font-black">A</div>';
-                  }}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
